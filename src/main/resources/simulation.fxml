@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.GridPane?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            minHeight="850.0" minWidth="850.0"
+            fx:controller="model.SimulationPresenter">
+    <center>
+        <VBox alignment="CENTER">
+            <GridPane fx:id = "mapGrid" gridLinesVisible="true" alignment="CENTER" prefWidth="800" prefHeight="800" />
+        </VBox>
+    </center>
+</BorderPane>
