@@ -1,6 +1,7 @@
 package model;
 
 import java.util.LinkedList;
+import java.util.Optional;
 
 public class Lane {
     private final TrafficFlow trafficFlow;
@@ -16,11 +17,13 @@ public class Lane {
         vehicles.add(vehicle);
     }
 
-    public void move(){
+    public Optional<Vehicle> move(){
         currentLightColor = currentLightColor.next();
         if (this.currentLightColor == LightColor.GREEN && !vehicles.isEmpty()) {
-            vehicles.removeFirst();
+            return Optional.of(vehicles.removeFirst());
         }
+
+        return Optional.empty();
     }
 
     public void close(){
@@ -34,16 +37,8 @@ public class Lane {
         }
     }
 
-    public boolean willBeOpen(){
-        return currentLightColor == LightColor.YELLOW || currentLightColor == LightColor.GREEN;
-    }
-
     public boolean isEmpty(){
         return vehicles.isEmpty();
-    }
-
-    public Vehicle getMovingVehicle(){
-        return vehicles.getFirst();
     }
 
     public int getAwaitTime() {

@@ -3,6 +3,7 @@ package model;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class Intersection {
     private final Map<MoveDirection,Road> roads = Map.of(MoveDirection.NORTH, new Road(MoveDirection.NORTH), MoveDirection.SOUTH, new Road(MoveDirection.SOUTH), MoveDirection.EAST, new Road(MoveDirection.EAST), MoveDirection.WEST, new Road(MoveDirection.WEST));
@@ -18,82 +19,74 @@ public class Intersection {
     );
     private final static int MIN_OPEN_TIME = 3;
     private final static int MAX_AWAIT_TIME = 6;
-    private int activeTime=0;
+    private int activeTime = 0;
     private ArrayList<Lane> activeLanes = new ArrayList<>();
-    private final ArrayList<Vehicle> movingVehicles = new ArrayList<>();
+
     private SimulationPresenter presenter;
 
-    public void move(){
-        movingVehicles.clear();
+    public ArrayList<Vehicle> move(){
+        ArrayList<Vehicle> movingVehicles = new ArrayList<>();
 
         if (activeTime>=MIN_OPEN_TIME || activeLanes.isEmpty()){
             changeActiveLanes();
-            activeTime=0;
+            activeTime = 0;
         }
 
         for (Lane lane: activeLanes){
-            if (lane.willBeOpen() && !lane.isEmpty()){
-                movingVehicles.add(lane.getMovingVehicle());
-            }
-            lane.move();
+            Optional<Vehicle> movingVehicle = lane.move();
+            movingVehicle.ifPresent(movingVehicles::add);
         }
         updateLaneTime();
         activeTime++;
         this.trafficChanged();
+
+        return movingVehicles;
     }
 
     public void addVehicle(Vehicle vehicle){
-        this.roads.get(vehicle.getTrafficFlow().getFromDirection()).addVehicle(vehicle);
+        this.roads.get(vehicle.getTrafficFlow().fromDirection()).addVehicle(vehicle);
         this.trafficChanged();
     }
-    
-    private ArrayList<Lane> getBusiestLanes(){
+
+    private ArrayList<Lane> getNextLanes(){
+        List<TrafficFlow> mostNeglectedCombination = new ArrayList<>();
+        int maxAwaitTime = 0;
         List<TrafficFlow> busiestCombination = new ArrayList<>();
-        int maxTraffic=-1;
-        
+        int maxTraffic = -1;
+
         for (List<TrafficFlow> combination : SAFE_FLOW_COMBINATIONS) {
-            int combinationTraffic=0;
+            int combinationAwaitTime = 0;
+            int combinationTraffic = 0;
+
             for (TrafficFlow trafficFlow : combination) {
-                combinationTraffic += roads.get(trafficFlow.getFromDirection()).getLaneTraffic(trafficFlow.getToDirection());
+                Lane lane = roads.get(trafficFlow.fromDirection()).getLane(trafficFlow.toDirection());
+                if (lane.getAwaitTime() >= MAX_AWAIT_TIME && !lane.isEmpty()){
+                    combinationAwaitTime+=lane.getAwaitTime();
+                }
+                combinationTraffic+=lane.getTrafficSize();
+            }
+            if (combinationAwaitTime > maxAwaitTime) {
+                maxAwaitTime = combinationAwaitTime;
+                mostNeglectedCombination = combination;
             }
             if (combinationTraffic > maxTraffic) {
                 maxTraffic = combinationTraffic;
                 busiestCombination = combination;
             }
         }
+        List<TrafficFlow> nextCombination;
 
-        ArrayList<Lane> busiestLanes = new ArrayList<>();
-        for (TrafficFlow trafficFlow : busiestCombination) {
-            busiestLanes.add(roads.get(trafficFlow.getFromDirection()).getLane(trafficFlow.getToDirection()));
+        if (!mostNeglectedCombination.isEmpty()){
+             nextCombination = mostNeglectedCombination;
+        }
+        else nextCombination = busiestCombination;
+
+        ArrayList<Lane> nextLanes = new ArrayList<>();
+        for (TrafficFlow trafficFlow : nextCombination) {
+            nextLanes.add(roads.get(trafficFlow.fromDirection()).getLane(trafficFlow.toDirection()));
         }
 
-        return busiestLanes;
-    }
-
-    private ArrayList<Lane> getMostNeglectedLanes(){
-        List<TrafficFlow> mostNeglectedCombination = new ArrayList<>();
-        int maxAwaitTime=0;
-
-        for (List<TrafficFlow> combination : SAFE_FLOW_COMBINATIONS) {
-            int combinationAwaitTime=0;
-            for (TrafficFlow trafficFlow : combination) {
-                Lane lane = roads.get(trafficFlow.getFromDirection()).getLane(trafficFlow.getToDirection());
-                if (lane.getAwaitTime() >= MAX_AWAIT_TIME && !lane.isEmpty()){
-                    combinationAwaitTime+=lane.getAwaitTime();
-                }
-            }
-            if (combinationAwaitTime > maxAwaitTime) {
-                maxAwaitTime = combinationAwaitTime;
-                mostNeglectedCombination = combination;
-            }
-        }
-
-        ArrayList<Lane> neglectedLanes = new ArrayList<>();
-        for (TrafficFlow trafficFlow : mostNeglectedCombination) {
-            neglectedLanes.add(roads.get(trafficFlow.getFromDirection()).getLane(trafficFlow.getToDirection()));
-        }
-
-        return neglectedLanes;
+        return nextLanes;
     }
 
     private void updateLaneTime(){
@@ -103,22 +96,14 @@ public class Intersection {
     }
 
     private void changeActiveLanes(){
-        ArrayList<Lane> nextLanes;
-        nextLanes = getMostNeglectedLanes();
-        if (nextLanes.isEmpty()){
-            nextLanes = getBusiestLanes();
-        }
+        ArrayList<Lane> nextLanes = getNextLanes();
 
         if (!nextLanes.equals(activeLanes)){
-            for (Lane lane: activeLanes){
+            for (Lane lane : activeLanes){
                 lane.close();
             }
             activeLanes = nextLanes;
         }
-    }
-
-    public ArrayList<Vehicle> getMovingVehicles(){
-        return this.movingVehicles;
     }
 
     public void setPresenter(SimulationPresenter presenter){

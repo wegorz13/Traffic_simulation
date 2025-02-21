@@ -7,15 +7,15 @@ public class Road {
     private final Map<MoveDirection,Lane> lanes = new HashMap<MoveDirection,Lane>();
     private final MoveDirection fromDirection;
 
-    public Road(MoveDirection direction) {
+    public Road(MoveDirection direction){
         this.fromDirection = direction;
-        lanes.put(direction.next().next(), new Lane(new TrafficFlow(this.fromDirection, direction.next().next())));
-        lanes.put(direction.next(), new Lane(new TrafficFlow(this.fromDirection, direction.next())));
-        lanes.put(direction.previous(), new Lane(new TrafficFlow(this.fromDirection, direction.previous())));
+        put(direction.next().next());
+        put(direction.next());
+        put(direction.previous());
     }
 
-    public int getLaneTraffic(MoveDirection direction) {
-        return lanes.get(direction).getTrafficSize();
+    private void put(MoveDirection direction){
+        lanes.put(direction, new Lane(new TrafficFlow(this.fromDirection, direction)));
     }
 
     public Lane getLane(MoveDirection direction) {
@@ -29,7 +29,7 @@ public class Road {
     }
 
     public void addVehicle(Vehicle vehicle) {
-        lanes.get(vehicle.getTrafficFlow().getToDirection()).addVehicle(vehicle);
+        lanes.get(vehicle.getTrafficFlow().toDirection()).addVehicle(vehicle);
     }
 
     public Map<MoveDirection,Lane> getLanes(){

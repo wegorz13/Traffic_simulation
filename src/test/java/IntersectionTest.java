@@ -40,8 +40,8 @@ public class IntersectionTest {
         Lane eastForwardLane = roads.get(MoveDirection.EAST).getLane(MoveDirection.WEST);
         Lane westForwardLane = roads.get(MoveDirection.WEST).getLane(MoveDirection.EAST);
 
-        assertEquals(eastForwardLane.getCurrentLightColor(),LightColor.GREEN);
-        assertEquals(westForwardLane.getCurrentLightColor(),LightColor.GREEN);
+        assertEquals(LightColor.GREEN, eastForwardLane.getCurrentLightColor());
+        assertEquals(LightColor.GREEN, westForwardLane.getCurrentLightColor());
     }
 
     @Test
@@ -53,11 +53,11 @@ public class IntersectionTest {
         intersection.addVehicle(new Vehicle("vehicle1", MoveDirection.SOUTH, MoveDirection.NORTH));
         intersection.addVehicle(new Vehicle("vehicle2", MoveDirection.NORTH, MoveDirection.SOUTH));
 
-        intersection.move();
-        intersection.move();
+        intersection.move(); //yellow light
+
 
         //then
-        List<Vehicle> vehicles = intersection.getMovingVehicles();
+        List<Vehicle> vehicles = intersection.move();
 
         assertEquals(2, vehicles.size());
         assertNotEquals(vehicles.get(0), vehicles.get(1));

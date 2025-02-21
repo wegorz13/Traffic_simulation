@@ -13,10 +13,10 @@ public class LaneTest {
         //when then
 
         lane.move();
-        assertEquals(lane.getCurrentLightColor(), LightColor.YELLOW);
+        assertEquals(LightColor.GREEN, lane.getCurrentLightColor());
         assertFalse(lane.isEmpty());
         lane.move();
-        assertEquals(lane.getCurrentLightColor(), LightColor.GREEN);
+        assertEquals(LightColor.GREEN, lane.getCurrentLightColor());
         assertTrue(lane.isEmpty());
     }
 
@@ -29,6 +29,6 @@ public class LaneTest {
         lane.close();
 
         //then
-        assertEquals(lane.getCurrentLightColor(), LightColor.RED);
+        assertEquals(LightColor.RED, lane.getCurrentLightColor());
     }
 }

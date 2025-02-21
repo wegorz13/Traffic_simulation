@@ -38,15 +38,22 @@ public class Simulation implements Runnable {
                     String startRoad = command.getString("startRoad");
                     String endRoad = command.getString("endRoad");
 
-                    Vehicle vehicle = new Vehicle(vehicleId, MoveDirection.fromString(startRoad), MoveDirection.fromString(endRoad));
-                    intersection.addVehicle(vehicle);
+                    try {
+                        MoveDirection fromDirection = MoveDirection.fromString(startRoad);
+                        MoveDirection toDirection = MoveDirection.fromString(endRoad);
+                        Vehicle vehicle = new Vehicle(vehicleId, fromDirection, toDirection);
+                        intersection.addVehicle(vehicle);
+                    }
+                    catch (Exception ignored) {
+                    }
 
                 } else if (type.equals("step")) {
-                    intersection.move();
-                    updateStatuses(intersection.getMovingVehicles());
+                    ArrayList<Vehicle> vehicles = intersection.move();
+                    updateStatuses(vehicles);
                 }
                     Thread.sleep(1000);
                 }
+
                 catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }

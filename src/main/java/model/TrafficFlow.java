@@ -1,26 +1,16 @@
 package model;
 
-public class TrafficFlow {
-    private final MoveDirection fromDirection;
-    private final MoveDirection toDirection;
+public record TrafficFlow (MoveDirection fromDirection, MoveDirection toDirection){
 
-    public TrafficFlow(MoveDirection fromDirection, MoveDirection toDirection) {
-        this.fromDirection = fromDirection;
-        this.toDirection = toDirection;
-    }
-
-    public MoveDirection getFromDirection() {
-        return fromDirection;
+    public TrafficFlow {
+        if (fromDirection == null || toDirection == null || fromDirection == toDirection) {
+            throw new IllegalArgumentException("Directions must not be null");
+        }
     }
 
     @Override
     public String toString() {
         return fromDirection + " -> " + toDirection;
     }
-
-    public MoveDirection getToDirection() {
-        return toDirection;
-    }
-
 
 }

@@ -55,8 +55,8 @@ public class SimulationPresenter {
     }
 
     private void drawLane(Lane lane){
-        MoveDirection fromDirection = lane.getTrafficFlow().getFromDirection();
-        MoveDirection toDirection = lane.getTrafficFlow().getToDirection();
+        MoveDirection fromDirection = lane.getTrafficFlow().fromDirection();
+        MoveDirection toDirection = lane.getTrafficFlow().toDirection();
         int xStart = 0;
         int yStart = 0;
         int xChange = 0;
